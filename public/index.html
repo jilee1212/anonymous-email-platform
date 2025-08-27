@@ -71,7 +71,7 @@
                 <input type="text" id="accessKeyInput" class="input-field" placeholder="apple-banana-cherry...">
             </div>
 
-            <button class="btn btn-secondary" onclick="accessInbox()">
+            <button class="btn btn-secondary" id="accessInboxBtn">
                 <i class="fas fa-sign-in-alt"></i> 받은편지함 접속
             </button>
         </div>
@@ -102,6 +102,49 @@
         <footer style="text-align: center; margin-top: 3rem; color: white; opacity: 0.8;">
             <p>&copy; 2025 영구 익명 이메일 플랫폼. SecureArbitrage.com을 위한 서비스입니다.</p>
         </footer>
+    </div>
+
+    <!-- 이메일 생성 결과 모달 -->
+    <div id="emailModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-envelope"></i> 새 이메일 생성 완료!</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="modalEmail">이메일 주소</label>
+                    <div class="input-with-copy">
+                        <input type="text" id="modalEmail" class="input-field" readonly>
+                        <button class="copy-btn" onclick="copyToClipboard('modalEmail')">
+                            <i class="fas fa-copy"></i> 복사
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="modalAccessKey">접근 키</label>
+                    <div class="input-with-copy">
+                        <input type="text" id="modalAccessKey" class="input-field" readonly>
+                        <button class="copy-btn" onclick="copyToClipboard('modalAccessKey')">
+                            <i class="fas fa-copy"></i> 복사
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="warning">
+                    <i class="fas fa-exclamation-triangle warning-icon"></i>
+                    <span class="warning-text">
+                        <strong>중요 경고:</strong> 이 접근 키를 잃어버리면 받은편지함에 다시는 접근할 수 없습니다. 안전한 곳에 반드시 저장하세요!
+                    </span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal()">
+                    <i class="fas fa-check"></i> 확인
+                </button>
+            </div>
+        </div>
     </div>
 
     <script src="js/main.js"></script>

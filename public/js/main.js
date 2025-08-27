@@ -19,16 +19,15 @@ async function generateEmail() {
         if (response.ok) {
             const data = await response.json();
             
-            // 생성된 이메일 정보 표시
-            document.getElementById('generatedEmail').value = data.email;
-            document.getElementById('accessKey').value = data.accessKey;
-            document.getElementById('emailInfo').style.display = 'block';
+            // 모달에 데이터 설정
+            document.getElementById('modalEmail').value = data.email;
+            document.getElementById('modalAccessKey').value = data.accessKey;
+            
+            // 모달 표시
+            showModal();
             
             // 성공 메시지
             showNotification('✅ 새 이메일 주소가 생성되었습니다!', 'success');
-            
-            // 페이지를 생성된 이메일 정보로 스크롤
-            document.getElementById('emailInfo').scrollIntoView({ behavior: 'smooth' });
         } else {
             const errorData = await response.json();
             showNotification(`❌ 오류: ${errorData.error}`, 'error');
@@ -56,7 +55,7 @@ async function accessInbox() {
 
     try {
         // 로딩 상태 표시
-        const accessBtn = document.querySelector('.btn-secondary');
+        const accessBtn = document.getElementById('accessInboxBtn');
         const originalText = accessBtn.innerHTML;
         accessBtn.innerHTML = '<span class="spinner"></span> 접속 중...';
         accessBtn.disabled = true;
@@ -86,10 +85,24 @@ async function accessInbox() {
         showNotification('❌ 서버 연결 오류가 발생했습니다.', 'error');
     } finally {
         // 버튼 상태 복원
-        const accessBtn = document.querySelector('.btn-secondary');
+        const accessBtn = document.getElementById('accessInboxBtn');
         accessBtn.innerHTML = originalText;
         accessBtn.disabled = false;
     }
+}
+
+// 모달 표시 함수
+function showModal() {
+    const modal = document.getElementById('emailModal');
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden'; // 스크롤 방지
+}
+
+// 모달 닫기 함수
+function closeModal() {
+    const modal = document.getElementById('emailModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto'; // 스크롤 복원
 }
 
 // 클립보드에 복사 함수
@@ -102,7 +115,7 @@ async function copyToClipboard(elementId) {
         showNotification('✅ 클립보드에 복사되었습니다!', 'success');
         
         // 복사 버튼에 체크 표시
-        const copyBtn = element.nextElementSibling;
+        const copyBtn = element.parentElement.querySelector('.copy-btn');
         const originalText = copyBtn.innerHTML;
         copyBtn.innerHTML = '<i class="fas fa-check"></i> 복사됨';
         copyBtn.style.background = '#28a745';
@@ -177,16 +190,56 @@ function showNotification(message, type = 'info') {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('익명 이메일 플랫폼이 로드되었습니다.');
     
-    // 입력 필드에서 Enter 키 이벤트 처리
-    document.getElementById('emailAddress').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            accessInbox();
-        }
-    });
-    
-    document.getElementById('accessKeyInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            accessInbox();
-        }
-    });
+    // 이벤트 리스너 설정
+    setupEventListeners();
 });
+
+// 이벤트 리스너 설정 함수
+function setupEventListeners() {
+    // 새 이메일 생성 버튼
+    const generateBtn = document.querySelector('.btn');
+    if (generateBtn) {
+        generateBtn.addEventListener('click', generateEmail);
+    }
+    
+    // 받은편지함 접속 버튼
+    const accessBtn = document.getElementById('accessInboxBtn');
+    if (accessBtn) {
+        accessBtn.addEventListener('click', accessInbox);
+    }
+    
+    // 모달 닫기 버튼
+    const closeBtn = document.querySelector('.close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+    }
+    
+    // 모달 외부 클릭 시 닫기
+    const modal = document.getElementById('emailModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    }
+    
+    // 입력 필드에서 Enter 키 이벤트 처리
+    const emailInput = document.getElementById('emailAddress');
+    if (emailInput) {
+        emailInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                accessInbox();
+            }
+        });
+    }
+    
+    const accessKeyInput = document.getElementById('accessKeyInput');
+    if (accessKeyInput) {
+        accessKeyInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                accessInbox();
+            }
+        });
+    }
+}
