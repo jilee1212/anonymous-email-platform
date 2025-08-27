@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 데이터베이스
+  postgres:
+    image: postgres:15-alpine
+    container_name: anonymous_email_db
+    environment:
+      POSTGRES_DB: anonymous_email
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  # Redis (Rate Limiting용)
+  redis:
+    image: redis:7-alpine
+    container_name: anonymous_email_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  # Node.js 애플리케이션
+  app:
+    build: .
+    container_name: anonymous_email_app
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: anonymous_email
+      DB_USER: postgres
+      DB_PASSWORD: password
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app_network
+    restart: unless-stopped
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  # Nginx (리버스 프록시)
+  nginx:
+    image: nginx:alpine
+    container_name: anonymous_email_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - app_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  app_network:
+    driver: bridge

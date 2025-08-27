@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>받은편지함 - 영구 익명 이메일 플랫폼</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .email-item {
+            transition: all 0.2s ease;
+        }
+        .email-item:hover {
+            background-color: #f8fafc;
+            transform: translateX(4px);
+        }
+        .email-item.unread {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+        }
+        .email-item.read {
+            background-color: #ffffff;
+            border-left: 4px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 헤더 -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <a href="/" class="text-white hover:text-gray-200 mr-6">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        홈으로
+                    </a>
+                    <h1 class="text-2xl font-bold">
+                        <i class="fas fa-inbox mr-3"></i>
+                        받은편지함
+                    </h1>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm opacity-90" id="currentEmail"></p>
+                    <p class="text-xs opacity-75" id="lastAccess"></p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- 이메일 정보 카드 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800 mb-2">
+                        <i class="fas fa-envelope mr-2 text-blue-600"></i>
+                        이메일 정보
+                    </h2>
+                    <p class="text-gray-600" id="emailInfo"></p>
+                </div>
+                <div class="text-right">
+                    <button id="refreshBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200">
+                        <i class="fas fa-sync-alt mr-2"></i>
+                        새로고침
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 이메일 목록 -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-800">
+                        <i class="fas fa-list mr-2"></i>
+                        수신된 이메일
+                    </h3>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-600">
+                            총 <span id="totalCount" class="font-semibold">0</span>개
+                        </span>
+                        <span class="text-sm text-gray-600">
+                            읽지 않음 <span id="unreadCount" class="font-semibold text-blue-600">0</span>개
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 이메일 목록 컨테이너 -->
+            <div id="emailList" class="divide-y divide-gray-200">
+                <!-- 이메일이 없을 때 표시 -->
+                <div id="noEmails" class="p-8 text-center text-gray-500">
+                    <i class="fas fa-inbox text-4xl mb-4 opacity-50"></i>
+                    <p class="text-lg">아직 수신된 이메일이 없습니다.</p>
+                    <p class="text-sm mt-2">이 이메일 주소로 메일을 보내면 여기에 표시됩니다.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 이메일 상세 모달 -->
+    <div id="emailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                <!-- 모달 헤더 -->
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-800">
+                            <i class="fas fa-envelope-open mr-2"></i>
+                            이메일 상세
+                        </h3>
+                        <button onclick="closeEmailModal()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 모달 컨텐츠 -->
+                <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                    <div id="emailDetail" class="space-y-4">
+                        <!-- 이메일 상세 내용이 여기에 표시됩니다 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 로딩 스피너 -->
+    <div id="loadingSpinner" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg p-8 text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p class="text-gray-700">로딩 중...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 푸터 -->
+    <footer class="bg-gray-800 text-white py-6 mt-16">
+        <div class="container mx-auto px-6 text-center">
+            <p class="text-gray-400">
+                © 2024 영구 익명 이메일 플랫폼. 모든 권리 보유.
+            </p>
+        </div>
+    </footer>
+
+    <script src="js/inbox.js"></script>
+</body>
+</html>

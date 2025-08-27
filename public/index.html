@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영구 익명 이메일 플랫폼</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .warning-text {
+            color: #dc2626;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 헤더 -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-8">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold mb-2">
+                    <i class="fas fa-envelope-open-text mr-3"></i>
+                    영구 익명 이메일 플랫폼
+                </h1>
+                <p class="text-xl opacity-90">
+                    SecureArbitrage.com을 위한 안전한 익명 이메일 서비스
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="container mx-auto px-6 py-12">
+        <div class="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            
+            <!-- 새 이메일 생성 섹션 -->
+            <div class="bg-white rounded-xl shadow-lg p-8 card-hover">
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-plus text-3xl text-blue-600"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">새 이메일 생성</h2>
+                    <p class="text-gray-600">계정 없이 즉시 새로운 익명 이메일 주소를 생성하세요</p>
+                </div>
+                
+                <button id="generateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition duration-300 flex items-center justify-center">
+                    <i class="fas fa-magic mr-2"></i>
+                    새 이메일 주소 생성
+                </button>
+                
+                <div id="generatedResult" class="hidden mt-6 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-semibold text-gray-800 mb-3">생성된 이메일 정보</h3>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">이메일 주소</label>
+                            <div class="flex">
+                                <input type="text" id="generatedEmail" readonly class="flex-1 bg-white border border-gray-300 rounded-l-lg px-3 py-2 text-sm">
+                                <button onclick="copyToClipboard('generatedEmail')" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-r-lg transition duration-200">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">접근 키</label>
+                            <div class="flex">
+                                <input type="text" id="generatedAccessKey" readonly class="flex-1 bg-white border border-gray-300 rounded-l-lg px-3 py-2 text-sm font-mono">
+                                <button onclick="copyToClipboard('generatedAccessKey')" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-r-lg transition duration-200">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 경고 메시지 -->
+                    <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <div class="flex items-start">
+                            <i class="fas fa-exclamation-triangle text-red-500 mt-1 mr-2"></i>
+                            <div>
+                                <p class="warning-text text-sm font-semibold">⚠️ 중요 경고</p>
+                                <p class="text-red-700 text-sm mt-1">
+                                    이 접근 키를 잃어버리면 받은편지함에 다시는 접근할 수 없습니다. 
+                                    안전한 곳에 반드시 저장하세요!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 기존 이메일 접속 섹션 -->
+            <div class="bg-white rounded-xl shadow-lg p-8 card-hover">
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-sign-in-alt text-3xl text-green-600"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">받은편지함 접속</h2>
+                    <p class="text-gray-600">기존 이메일 주소와 접근 키로 받은편지함에 접속하세요</p>
+                </div>
+                
+                <form id="accessForm" class="space-y-4">
+                    <div>
+                        <label for="emailAddress" class="block text-sm font-medium text-gray-700 mb-1">
+                            이메일 주소
+                        </label>
+                        <input type="email" id="emailAddress" name="emailAddress" required
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="your-email@domain.com">
+                    </div>
+                    
+                    <div>
+                        <label for="accessKey" class="block text-sm font-medium text-gray-700 mb-1">
+                            접근 키
+                        </label>
+                        <input type="text" id="accessKey" name="accessKey" required
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="apple-banana-cherry...">
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg transition duration-300 flex items-center justify-center">
+                        <i class="fas fa-inbox mr-2"></i>
+                        받은편지함 접속
+                    </button>
+                </form>
+                
+                <div id="accessError" class="hidden mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="text-red-700 text-sm" id="errorMessage"></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 정보 섹션 -->
+        <div class="mt-16 max-w-4xl mx-auto">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                    <i class="fas fa-info-circle mr-2 text-blue-600"></i>
+                    서비스 특징
+                </h3>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-shield-alt text-2xl text-blue-600"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">완전 익명</h4>
+                        <p class="text-gray-600 text-sm">개인정보 없이 즉시 사용 가능</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-infinity text-2xl text-green-600"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">영구 보관</h4>
+                        <p class="text-gray-600 text-sm">이메일 데이터가 자동으로 삭제되지 않음</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-key text-2xl text-purple-600"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">안전한 접근</h4>
+                        <p class="text-gray-600 text-sm">접근 키를 통한 보안 인증</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="bg-gray-800 text-white py-8 mt-16">
+        <div class="container mx-auto px-6 text-center">
+            <p class="text-gray-400">
+                © 2024 영구 익명 이메일 플랫폼. 모든 권리 보유.
+            </p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
