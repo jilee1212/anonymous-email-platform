@@ -19,9 +19,13 @@ async function generateEmail() {
         if (response.ok) {
             const data = await response.json();
             
+            // 백엔드 응답 구조에 맞게 수정
+            const email = data.data.emailAddress;
+            const accessKey = data.data.accessKey;
+            
             // 모달에 데이터 설정
-            document.getElementById('modalEmail').value = data.email;
-            document.getElementById('modalAccessKey').value = data.accessKey;
+            document.getElementById('modalEmail').value = email;
+            document.getElementById('modalAccessKey').value = accessKey;
             
             // 모달 표시
             showModal();
@@ -70,7 +74,7 @@ async function accessInbox() {
 
         if (response.ok) {
             const data = await response.json();
-            if (data.valid) {
+            if (data.success) {
                 // 받은편지함 페이지로 이동
                 window.location.href = `/inbox.html?email=${encodeURIComponent(email)}&accessKey=${encodeURIComponent(accessKey)}`;
             } else {
