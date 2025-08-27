@@ -1,13 +1,17 @@
 const { Pool } = require('pg');
-const config = require('../config/config');
+
+// 환경 변수에서 DATABASE_URL 사용 (Render에서 제공)
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.error('❌ DATABASE_URL 환경 변수가 설정되지 않았습니다.');
+  process.exit(1);
+}
 
 // 데이터베이스 연결 풀 생성
 const pool = new Pool({
-  host: config.database.host,
-  port: config.database.port,
-  database: config.database.name,
-  user: config.database.user,
-  password: config.database.password,
+  connectionString: connectionString,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
   max: 20, // 최대 연결 수
   idleTimeoutMillis: 30000, // 유휴 연결 타임아웃
   connectionTimeoutMillis: 2000, // 연결 타임아웃
