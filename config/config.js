@@ -24,8 +24,8 @@ module.exports = {
   
   // 도메인 설정
   domain: {
-    main: process.env.DOMAIN || 'localhost',
-    email: process.env.EMAIL_DOMAIN || 'localhost'
+    main: process.env.DOMAIN || 'nosignup.kr',
+    email: process.env.EMAIL_DOMAIN || 'nosignup.kr'
   },
   
   // Rate Limiting 설정

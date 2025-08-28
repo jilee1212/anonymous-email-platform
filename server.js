@@ -87,6 +87,8 @@ async function startServer() {
       console.log(`🚀 서버가 포트 ${PORT}에서 실행 중입니다.`);
       console.log(`📧 영구 익명 이메일 플랫폼이 준비되었습니다.`);
       console.log(`🌐 http://localhost:${PORT} 에서 접속할 수 있습니다.`);
+      console.log(`🌍 도메인: ${config.domain.main}`);
+      console.log(`📧 이메일 도메인: ${config.domain.email}`);
     });
 
   } catch (error) {
