@@ -5,149 +5,526 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>받은편지함 - 영구 익명 이메일 플랫폼</title>
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📧</text></svg>">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        .gradient-bg {
+        /* 받은편지함 전용 스타일 */
+        .inbox-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
         }
+
+        .inbox-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .inbox-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .inbox-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .inbox-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .inbox-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .inbox-card h2 {
+            color: #667eea;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .search-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-left: 4px solid #667eea;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 0.8rem 1rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            background: white;
+            color: #555;
+            transition: border-color 0.3s ease;
+            min-width: 150px;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .email-list {
+            max-height: 600px;
+            overflow-y: auto;
+            border: 1px solid #e1e5e9;
+            border-radius: 10px;
+            background: white;
+        }
+
         .email-item {
-            transition: all 0.2s ease;
+            padding: 1rem;
+            border-bottom: 1px solid #e1e5e9;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
+
+        .email-item:last-child {
+            border-bottom: none;
+        }
+
         .email-item:hover {
-            background-color: #f8fafc;
-            transform: translateX(4px);
+            background-color: #f8f9fa;
         }
+
         .email-item.unread {
-            background-color: #eff6ff;
-            border-left: 4px solid #3b82f6;
+            background-color: #e3f2fd;
+            border-left: 4px solid #667eea;
         }
-        .email-item.read {
-            background-color: #ffffff;
-            border-left: 4px solid #e5e7eb;
+
+        .email-item.selected {
+            background-color: #e8f5e8;
+            border-left: 4px solid #28a745;
+        }
+
+        .email-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+        }
+
+        .email-star {
+            color: #ccc;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            font-size: 1.2rem;
+        }
+
+        .email-star:hover {
+            color: #f39c12;
+        }
+
+        .email-star.filled {
+            color: #f39c12;
+        }
+
+        .email-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .email-sender {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+
+        .email-subject {
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 0.25rem;
+        }
+
+        .email-preview {
+            color: #777;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .email-date {
+            color: #999;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            margin-left: auto;
+        }
+
+        .email-attachment {
+            color: #667eea;
+            margin-left: 0.5rem;
+        }
+
+        .email-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-btn {
+            background: #f8f9fa;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toolbar-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .toolbar-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .pagination-info {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .no-emails {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+
+        .no-emails i {
+            font-size: 4rem;
+            color: #ccc;
+            margin-bottom: 1rem;
+        }
+
+        .no-emails h3 {
+            color: #555;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .stats-card h2 {
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* 스크롤바 스타일 */
+        .email-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .email-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .email-list::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        .email-list::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .inbox-header h1 {
+                font-size: 2rem;
+            }
+            
+            .inbox-container {
+                padding: 0 1rem;
+            }
+            
+            .inbox-card {
+                padding: 1.5rem;
+            }
+            
+            .filter-controls {
+                flex-direction: column;
+            }
+            
+            .filter-select {
+                min-width: auto;
+            }
+            
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .email-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .email-date {
+                margin-left: 0;
+            }
+        }
+
+        /* 애니메이션 */
+        .inbox-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .inbox-card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .inbox-card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .email-item {
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <!-- 헤더 -->
-    <header class="gradient-bg text-white shadow-lg">
-        <div class="container mx-auto px-6 py-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <a href="/" class="text-white hover:text-gray-200 mr-6">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        홈으로
-                    </a>
-                    <h1 class="text-2xl font-bold">
-                        <i class="fas fa-inbox mr-3"></i>
-                        받은편지함
-                    </h1>
+<body>
+    <!-- 받은편지함 헤더 -->
+    <header class="inbox-header">
+        <h1><i class="fas fa-inbox"></i> 받은편지함</h1>
+        <p>영구 익명 이메일 플랫폼 - 수신된 메일을 확인하세요</p>
+    </header>
+
+    <div class="inbox-container">
+        <!-- 통계 카드 -->
+        <div class="inbox-card stats-card">
+            <h2><i class="fas fa-chart-bar"></i> 이메일 통계</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalCount">0</div>
+                    <div class="stat-label">전체 메일</div>
                 </div>
-                <div class="text-right">
-                    <p class="text-sm opacity-90" id="currentEmail"></p>
-                    <p class="text-xs opacity-75" id="lastAccess"></p>
+                <div class="stat-item">
+                    <div class="stat-number" id="unreadCount">0</div>
+                    <div class="stat-label">읽지 않은 메일</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="starredCount">0</div>
+                    <div class="stat-label">별표 메일</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="todayCount">0</div>
+                    <div class="stat-label">오늘 받은 메일</div>
                 </div>
             </div>
         </div>
-    </header>
 
-    <!-- 메인 컨텐츠 -->
-    <main class="container mx-auto px-6 py-8">
-        <!-- 이메일 정보 카드 -->
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h2 class="text-xl font-semibold text-gray-800 mb-2">
-                        <i class="fas fa-envelope mr-2 text-blue-600"></i>
-                        이메일 정보
-                    </h2>
-                    <p class="text-gray-600" id="emailInfo"></p>
+        <!-- 검색 및 필터 섹션 -->
+        <div class="inbox-card search-section">
+            <h2><i class="fas fa-search"></i> 검색 및 필터</h2>
+            <input type="text" id="searchInput" class="search-input" placeholder="제목, 발신자, 내용으로 검색...">
+            <div class="filter-controls">
+                <select id="statusFilter" class="filter-select">
+                    <option value="">모든 상태</option>
+                    <option value="unread">읽지 않은 메일</option>
+                    <option value="read">읽은 메일</option>
+                </select>
+                <select id="dateSort" class="filter-select">
+                    <option value="newest">최신순</option>
+                    <option value="oldest">오래된순</option>
+                </select>
+                <button class="toolbar-btn" id="refreshBtn">
+                    <i class="fas fa-redo-alt"></i> 새로고침
+                </button>
+            </div>
+        </div>
+
+        <!-- 이메일 목록 섹션 -->
+        <div class="inbox-card">
+            <h2><i class="fas fa-envelope"></i> 이메일 목록</h2>
+            
+            <!-- 툴바 -->
+            <div class="toolbar">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" id="selectAll" class="email-checkbox">
+                    <span>전체 선택</span>
+                </label>
+                <button class="toolbar-btn" id="markReadBtn" disabled>
+                    <i class="fas fa-check-double"></i> 읽음 표시
+                </button>
+                <button class="toolbar-btn" id="markUnreadBtn" disabled>
+                    <i class="fas fa-envelope"></i> 읽지 않음 표시
+                </button>
+                <button class="toolbar-btn" id="starBtn" disabled>
+                    <i class="fas fa-star"></i> 별표
+                </button>
+            </div>
+
+            <!-- 이메일 목록 -->
+            <div class="email-list" id="emailList">
+                <!-- 이메일이 없을 때 -->
+                <div id="noEmails" class="no-emails">
+                    <i class="fas fa-inbox"></i>
+                    <h3>아직 수신된 이메일이 없습니다</h3>
+                    <p>이 이메일 주소로 메일을 보내면 여기에 표시됩니다</p>
                 </div>
-                <div class="text-right">
-                    <button id="refreshBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200">
-                        <i class="fas fa-sync-alt mr-2"></i>
-                        새로고침
+            </div>
+
+            <!-- 페이지네이션 -->
+            <div class="pagination">
+                <div class="pagination-info" id="paginationInfo">0개 중 0-0</div>
+                <div class="pagination-controls">
+                    <button class="toolbar-btn" id="prevBtn" disabled>
+                        <i class="fas fa-chevron-left"></i> 이전
+                    </button>
+                    <button class="toolbar-btn" id="nextBtn" disabled>
+                        다음 <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
             </div>
         </div>
-
-        <!-- 이메일 목록 -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-gray-800">
-                        <i class="fas fa-list mr-2"></i>
-                        수신된 이메일
-                    </h3>
-                    <div class="flex items-center space-x-4">
-                        <span class="text-sm text-gray-600">
-                            총 <span id="totalCount" class="font-semibold">0</span>개
-                        </span>
-                        <span class="text-sm text-gray-600">
-                            읽지 않음 <span id="unreadCount" class="font-semibold text-blue-600">0</span>개
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 이메일 목록 컨테이너 -->
-            <div id="emailList" class="divide-y divide-gray-200">
-                <!-- 이메일이 없을 때 표시 -->
-                <div id="noEmails" class="p-8 text-center text-gray-500">
-                    <i class="fas fa-inbox text-4xl mb-4 opacity-50"></i>
-                    <p class="text-lg">아직 수신된 이메일이 없습니다.</p>
-                    <p class="text-sm mt-2">이 이메일 주소로 메일을 보내면 여기에 표시됩니다.</p>
-                </div>
-            </div>
-        </div>
-    </main>
+    </div>
 
     <!-- 이메일 상세 모달 -->
-    <div id="emailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-                <!-- 모달 헤더 -->
-                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-800">
-                            <i class="fas fa-envelope-open mr-2"></i>
-                            이메일 상세
-                        </h3>
-                        <button onclick="closeEmailModal()" class="text-gray-500 hover:text-gray-700">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
+    <div id="emailModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-envelope-open"></i> 이메일 상세</h2>
+                <span class="close" onclick="closeEmailModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="emailDetail">
+                    <!-- 이메일 상세 내용이 여기에 표시됩니다 -->
                 </div>
-
-                <!-- 모달 컨텐츠 -->
-                <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-                    <div id="emailDetail" class="space-y-4">
-                        <!-- 이메일 상세 내용이 여기에 표시됩니다 -->
-                    </div>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeEmailModal()">
+                    <i class="fas fa-check"></i> 닫기
+                </button>
             </div>
         </div>
     </div>
 
     <!-- 로딩 스피너 -->
-    <div id="loadingSpinner" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
-        <div class="flex items-center justify-center min-h-screen">
-            <div class="bg-white rounded-lg p-8 text-center">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p class="text-gray-700">로딩 중...</p>
+    <div id="loadingSpinner" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 300px; text-align: center;">
+            <div class="modal-body">
+                <div class="spinner" style="width: 40px; height: 40px; border-width: 3px; margin: 0 auto 1rem;"></div>
+                <p style="color: #666; font-size: 1.1rem;">로딩 중...</p>
             </div>
         </div>
     </div>
 
-    <!-- 푸터 -->
-    <footer class="bg-gray-800 text-white py-6 mt-16">
-        <div class="container mx-auto px-6 text-center">
-            <p class="text-gray-400">
-                © 2024 영구 익명 이메일 플랫폼. 모든 권리 보유.
-            </p>
-        </div>
-    </footer>
+    <!-- 알림 토스트 -->
+    <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 1001; max-width: 400px;"></div>
 
     <script src="js/inbox.js"></script>
 </body>
