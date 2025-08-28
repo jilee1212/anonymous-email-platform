@@ -37,5 +37,14 @@ module.exports = {
   // 로깅 설정
   logging: {
     level: process.env.LOG_LEVEL || 'info'
+  },
+  
+  // SMTP 서버 설정
+  smtp: {
+    port: parseInt(process.env.SMTP_PORT) || 2525,
+    host: process.env.SMTP_HOST || '0.0.0.0',
+    maxSize: parseInt(process.env.SMTP_MAX_SIZE) || 10485760, // 10MB
+    maxConnections: parseInt(process.env.SMTP_MAX_CONNECTIONS) || 100,
+    secure: process.env.SMTP_SECURE === 'true' || false
   }
 };

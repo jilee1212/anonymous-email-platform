@@ -5,6 +5,7 @@ const path = require('path');
 const config = require('./config/config');
 const { testConnection, initializeDatabase } = require('./database/connection');
 const apiRoutes = require('./routes/api');
+const smtpServer = require('./utils/smtpServer');
 
 const app = express();
 const PORT = config.server.port;
@@ -90,6 +91,10 @@ async function startServer() {
       console.log(`🌍 도메인: ${config.domain.main}`);
       console.log(`📧 이메일 도메인: ${config.domain.email}`);
     });
+
+    // SMTP 서버 시작
+    smtpServer.start();
+    console.log(`📧 SMTP 서버가 포트 ${config.smtp.port}에서 실행 중입니다.`);
 
   } catch (error) {
     console.error('❌ 서버 시작 실패:', error);

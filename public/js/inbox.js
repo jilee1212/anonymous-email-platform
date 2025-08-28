@@ -233,7 +233,7 @@ function handleSelectAll() {
         
         if (selectAll.checked) {
             selectedEmails.add(emailId);
-        } else {
+            } else {
             selectedEmails.delete(emailId);
         }
     });
@@ -257,7 +257,7 @@ function updateSelectAllState() {
     } else if (checkedCount === totalCount) {
         selectAll.checked = true;
         selectAll.indeterminate = false;
-    } else {
+        } else {
         selectAll.checked = false;
         selectAll.indeterminate = true;
     }
@@ -378,12 +378,12 @@ function applyFilters() {
     renderEmailList();
     updateCounts();
     updatePagination();
-}
-
-// 카운트 업데이트
+            }
+            
+            // 카운트 업데이트
 function updateCounts() {
     const totalCount = document.getElementById('totalCount');
-    const unreadCount = document.getElementById('unreadCount');
+            const unreadCount = document.getElementById('unreadCount');
     const starredCount = document.getElementById('starredCount');
     const todayCount = document.getElementById('todayCount');
     
