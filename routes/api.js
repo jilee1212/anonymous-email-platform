@@ -92,14 +92,28 @@ router.post('/generate-email',
 router.post('/check-access',
   accessLimiter,
   [
-    body('emailAddress').isEmail().withMessage('유효한 이메일 주소를 입력해주세요.'),
+    body('emailAddress')
+      .custom((value) => {
+        // localhost 도메인을 포함한 이메일 형식 검증
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const localhostRegex = /^[^\s@]+@localhost$/;
+        
+        if (emailRegex.test(value) || localhostRegex.test(value)) {
+          return true;
+        }
+        throw new Error('유효한 이메일 주소를 입력해주세요.');
+      })
+      .withMessage('유효한 이메일 주소를 입력해주세요.'),
     body('accessKey').notEmpty().withMessage('접근 키를 입력해주세요.')
   ],
   async (req, res) => {
     try {
+      console.log('🔍 /check-access 요청 받음:', req.body);
+      
       // 입력 검증
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.log('❌ 입력 검증 실패:', errors.array());
         return res.status(400).json({
           success: false,
           errors: errors.array()
@@ -107,6 +121,7 @@ router.post('/check-access',
       }
 
       const { emailAddress, accessKey } = req.body;
+      console.log('✅ 검증된 입력:', { emailAddress, accessKey });
 
       // 데이터베이스에서 사용자 조회
       const client = await pool.connect();
@@ -117,9 +132,12 @@ router.post('/check-access',
           WHERE email_address = $1
         `;
         
+        console.log('🔍 사용자 조회 쿼리 실행:', query, [emailAddress]);
         const result = await client.query(query, [emailAddress]);
+        console.log('📊 사용자 조회 결과:', result.rows);
         
         if (result.rows.length === 0) {
+          console.log('❌ 사용자를 찾을 수 없음:', emailAddress);
           // 접근 로그 기록 (실패)
           await client.query(`
             INSERT INTO access_logs (user_email, ip_address, action, success)
@@ -133,9 +151,14 @@ router.post('/check-access',
         }
 
         const user = result.rows[0];
+        console.log('👤 사용자 정보:', user);
         
         // 접근 키 검증
-        if (!emailGenerator.verifyAccessKey(accessKey, user.access_key_hash)) {
+        const isKeyValid = emailGenerator.verifyAccessKey(accessKey, user.access_key_hash);
+        console.log('🔑 접근 키 검증 결과:', isKeyValid);
+        
+        if (!isKeyValid) {
+          console.log('❌ 접근 키 검증 실패');
           // 접근 로그 기록 (실패)
           await client.query(`
             INSERT INTO access_logs (user_email, ip_address, action, success)
@@ -148,6 +171,8 @@ router.post('/check-access',
           });
         }
 
+        console.log('✅ 인증 성공, 마지막 접근 시간 업데이트');
+        
         // 마지막 접근 시간 업데이트
         await client.query(`
           UPDATE users 
@@ -177,7 +202,7 @@ router.post('/check-access',
       }
       
     } catch (error) {
-      console.error('접근 확인 오류:', error);
+      console.error('❌ 접근 확인 오류:', error);
       res.status(500).json({
         success: false,
         error: '접근 확인 중 오류가 발생했습니다.'

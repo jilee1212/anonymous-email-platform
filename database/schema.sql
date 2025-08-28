@@ -1,11 +1,7 @@
--- 영구 익명 이메일 플랫폼 데이터베이스 스키마
-
--- 데이터베이스 생성
-CREATE DATABASE IF NOT EXISTS anonymous_email;
-\c anonymous_email;
+-- 영구 익명 이메일 플랫폼 데이터베이스 스키마 (PostgreSQL용)
 
 -- 사용자 테이블 (이메일 주소와 암호화된 접근 키)
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email_address VARCHAR(255) UNIQUE NOT NULL,
     access_key_hash VARCHAR(255) NOT NULL,
@@ -14,7 +10,7 @@ CREATE TABLE users (
 );
 
 -- 이메일 테이블 (수신된 메일 데이터)
-CREATE TABLE emails (
+CREATE TABLE IF NOT EXISTS emails (
     id SERIAL PRIMARY KEY,
     user_email VARCHAR(255) NOT NULL,
     sender VARCHAR(255) NOT NULL,
@@ -26,12 +22,12 @@ CREATE TABLE emails (
 );
 
 -- 인덱스 생성 (성능 향상)
-CREATE INDEX idx_users_email ON users(email_address);
-CREATE INDEX idx_emails_user_email ON emails(user_email);
-CREATE INDEX idx_emails_received_at ON emails(received_at);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email_address);
+CREATE INDEX IF NOT EXISTS idx_emails_user_email ON emails(user_email);
+CREATE INDEX IF NOT EXISTS idx_emails_received_at ON emails(received_at);
 
 -- 접근 로그 테이블 (보안 및 모니터링)
-CREATE TABLE access_logs (
+CREATE TABLE IF NOT EXISTS access_logs (
     id SERIAL PRIMARY KEY,
     user_email VARCHAR(255),
     ip_address INET,
@@ -42,7 +38,7 @@ CREATE TABLE access_logs (
 );
 
 -- Rate limiting을 위한 테이블
-CREATE TABLE rate_limits (
+CREATE TABLE IF NOT EXISTS rate_limits (
     id SERIAL PRIMARY KEY,
     ip_address INET UNIQUE NOT NULL,
     request_count INTEGER DEFAULT 1,

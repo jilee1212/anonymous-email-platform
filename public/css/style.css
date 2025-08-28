@@ -12,6 +12,22 @@ body {
     color: #333;
 }
 
+/* 스피너 애니메이션 */
+.spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 /* 헤더 스타일 */
 .header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -237,22 +253,6 @@ body {
 
 .card:nth-child(3) {
     animation-delay: 0.2s;
-}
-
-/* 로딩 스피너 */
-.spinner {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #667eea;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
 }
 
 /* 모달 스타일 */

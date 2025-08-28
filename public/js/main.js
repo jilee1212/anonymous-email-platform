@@ -42,7 +42,7 @@ async function generateEmail() {
     } finally {
         // 버튼 상태 복원
         const generateBtn = document.querySelector('.btn');
-        generateBtn.innerHTML = originalText;
+        generateBtn.innerHTML = '<i class="fas fa-magic"></i> 새 이메일 주소 생성';
         generateBtn.disabled = false;
     }
 }
@@ -69,7 +69,7 @@ async function accessInbox() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ email, accessKey })
+            body: JSON.stringify({ emailAddress: email, accessKey: accessKey })
         });
 
         if (response.ok) {
@@ -90,7 +90,7 @@ async function accessInbox() {
     } finally {
         // 버튼 상태 복원
         const accessBtn = document.getElementById('accessInboxBtn');
-        accessBtn.innerHTML = originalText;
+        accessBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 받은편지함 접속';
         accessBtn.disabled = false;
     }
 }
