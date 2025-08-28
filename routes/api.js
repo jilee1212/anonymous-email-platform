@@ -94,11 +94,10 @@ router.post('/check-access',
   [
     body('emailAddress')
       .custom((value) => {
-        // localhost 도메인을 포함한 이메일 형식 검증
+        // 모든 유효한 이메일 형식 허용 (localhost, nosignup.kr 등)
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const localhostRegex = /^[^\s@]+@localhost$/;
         
-        if (emailRegex.test(value) || localhostRegex.test(value)) {
+        if (emailRegex.test(value)) {
           return true;
         }
         throw new Error('유효한 이메일 주소를 입력해주세요.');
@@ -218,6 +217,9 @@ router.get('/inbox/:email',
     try {
       const { email } = req.params;
       const { accessKey } = req.query;
+      
+      // URL 디코딩 처리
+      const decodedEmail = decodeURIComponent(email);
 
       if (!accessKey) {
         return res.status(400).json({
@@ -235,7 +237,7 @@ router.get('/inbox/:email',
           WHERE email_address = $1
         `;
         
-        const userResult = await client.query(userQuery, [email]);
+        const userResult = await client.query(userQuery, [decodedEmail]);
         
         if (userResult.rows.length === 0) {
           return res.status(404).json({
@@ -261,12 +263,12 @@ router.get('/inbox/:email',
           ORDER BY received_at DESC
         `;
         
-        const emailsResult = await client.query(emailsQuery, [email]);
+        const emailsResult = await client.query(emailsQuery, [decodedEmail]);
         
         res.json({
           success: true,
           data: {
-            emailAddress: email,
+            emailAddress: decodedEmail,
             emails: emailsResult.rows,
             totalCount: emailsResult.rows.length
           },

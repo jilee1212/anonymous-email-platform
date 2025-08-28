@@ -10,3 +10,7 @@ services:
         value: production
       - key: PORT
         value: 8081
+      - key: DOMAIN
+        value: nosignup.kr
+      - key: EMAIL_DOMAIN
+        value: nosignup.kr
