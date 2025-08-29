@@ -12,10 +12,45 @@
         .inbox-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            text-align: center;
             padding: 2rem;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             margin-bottom: 2rem;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-left {
+            text-align: left;
+        }
+
+        .header-right {
+            text-align: right;
+        }
+
+        .home-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+        }
+
+        .home-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .inbox-header h1 {
@@ -331,6 +366,20 @@
 
         /* 반응형 디자인 */
         @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .header-left {
+                text-align: center;
+            }
+
+            .header-right {
+                text-align: center;
+            }
+
             .inbox-header h1 {
                 font-size: 2rem;
             }
@@ -399,8 +448,17 @@
 <body>
     <!-- 받은편지함 헤더 -->
     <header class="inbox-header">
-        <h1><i class="fas fa-inbox"></i> 받은편지함</h1>
-        <p>영구 익명 이메일 플랫폼 - 수신된 메일을 확인하세요</p>
+        <div class="header-content">
+            <div class="header-left">
+                <h1><i class="fas fa-inbox"></i> 받은편지함</h1>
+                <p>영구 익명 이메일 플랫폼 - 수신된 메일을 확인하세요</p>
+            </div>
+            <div class="header-right">
+                <a href="/" class="home-btn" title="홈으로 가기">
+                    <i class="fas fa-home"></i>
+                </a>
+            </div>
+        </div>
     </header>
 
     <div class="inbox-container">

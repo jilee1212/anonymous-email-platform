@@ -27,6 +27,14 @@ async function generateEmail() {
             document.getElementById('modalEmail').value = email;
             document.getElementById('modalAccessKey').value = accessKey;
             
+            // 입력 필드에 자동 입력
+            document.getElementById('emailAddress').value = email;
+            document.getElementById('accessKeyInput').value = accessKey;
+            
+            // localStorage에 저장 (새로고침 시 유지)
+            localStorage.setItem('lastGeneratedEmail', email);
+            localStorage.setItem('lastGeneratedAccessKey', accessKey);
+            
             // 모달 표시
             showModal();
             
@@ -194,9 +202,29 @@ function showNotification(message, type = 'info') {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('익명 이메일 플랫폼이 로드되었습니다.');
     
+    // localStorage에서 이전에 생성된 이메일 정보 복원
+    restoreEmailData();
+    
     // 이벤트 리스너 설정
     setupEventListeners();
 });
+
+// localStorage에서 이메일 데이터 복원 함수
+function restoreEmailData() {
+    const savedEmail = localStorage.getItem('lastGeneratedEmail');
+    const savedAccessKey = localStorage.getItem('lastGeneratedAccessKey');
+    
+    if (savedEmail && savedAccessKey) {
+        // 입력 필드에 복원
+        const emailInput = document.getElementById('emailAddress');
+        const accessKeyInput = document.getElementById('accessKeyInput');
+        
+        if (emailInput) emailInput.value = savedEmail;
+        if (accessKeyInput) accessKeyInput.value = savedAccessKey;
+        
+        console.log('저장된 이메일 정보를 복원했습니다:', savedEmail);
+    }
+}
 
 // 이벤트 리스너 설정 함수
 function setupEventListeners() {
