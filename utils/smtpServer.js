@@ -6,7 +6,7 @@ const config = require('../config/config');
 class SMTPServerManager {
   constructor() {
     this.server = null;
-    this.port = config.smtp?.port || 10000;  // 기본값을 10000으로 변경
+    this.port = config.smtp?.port || 10001;  // 기본값을 10001로 변경 (포트 충돌 방지)
   }
 
   // SMTP 서버 시작

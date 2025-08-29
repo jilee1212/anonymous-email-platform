@@ -96,8 +96,8 @@ async function startServer() {
       console.log(`📧 이메일 도메인: ${config.domain.email}`);
     });
 
-    // SMTP 서버 시작 (HTTP 서버와 동일한 포트에서 실행)
-    const smtpPort = config.server.port; // 10000
+    // SMTP 서버 시작 (별도 포트에서 실행)
+    const smtpPort = config.smtp.port; // 10001 (별도 포트)
     smtpServer.start(smtpPort);
     console.log(`📧 SMTP 서버가 포트 ${smtpPort}에서 실행 중입니다.`);
 
