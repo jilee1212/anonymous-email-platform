@@ -8,6 +8,10 @@ const apiRoutes = require('./routes/api');
 const smtpServer = require('./utils/smtpServer');
 
 const app = express();
+
+// Trust proxy 설정 추가 (Rate Limit 오류 해결)
+app.set('trust proxy', 1);
+
 const PORT = config.server.port;
 
 // 보안 미들웨어
