@@ -67,6 +67,93 @@ app.get('/health', (req, res) => {
   });
 });
 
+// 이메일 수신 엔드포인트 (Mailgun Webhook용)
+app.post('/receive-email', express.urlencoded({ extended: true, limit: '10mb' }), async (req, res) => {
+  try {
+    console.log('📨 Mailgun Webhook을 통한 이메일 수신 요청');
+    
+    // Mailgun webhook 데이터 파싱
+    const emailData = {
+      from: req.body['sender'] || 'unknown@unknown.com',
+      to: req.body['recipient'] || '',
+      subject: req.body['subject'] || '(제목 없음)',
+      body: req.body['body-plain'] || req.body['body-html'] || '',
+      html: req.body['body-html'] || '',
+      receivedAt: new Date(),
+      messageId: req.body['message-id'] || '',
+      timestamp: req.body['timestamp'] || Date.now()
+    };
+    
+    console.log('📧 수신된 이메일 데이터:', {
+      from: emailData.from,
+      to: emailData.to,
+      subject: emailData.subject,
+      bodyLength: emailData.body.length
+    });
+    
+    // 이메일 저장
+    const { pool } = require('./database/connection');
+    const client = await pool.connect();
+    
+    try {
+      // 수신자 이메일 주소 추출
+      const recipientEmail = emailData.to;
+      
+      if (!recipientEmail) {
+        console.log('⚠️ 유효하지 않은 수신자 이메일');
+        return res.status(400).json({ success: false, error: '유효하지 않은 수신자 이메일' });
+      }
+      
+      // 사용자 존재 여부 확인
+      const userQuery = `
+        SELECT id FROM users 
+        WHERE email_address = $1
+      `;
+      
+      const userResult = await client.query(userQuery, [recipientEmail]);
+      
+      if (userResult.rows.length === 0) {
+        console.log('⚠️ 등록되지 않은 이메일 주소:', recipientEmail);
+        return res.status(404).json({ success: false, error: '등록되지 않은 이메일 주소' });
+      }
+      
+      // 이메일 저장
+      const insertQuery = `
+        INSERT INTO emails (user_email, sender, subject, body, received_at, is_read)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING id
+      `;
+      
+      const result = await client.query(insertQuery, [
+        recipientEmail,
+        emailData.from,
+        emailData.subject,
+        emailData.body,
+        emailData.receivedAt,
+        false
+      ]);
+      
+      console.log('✅ 이메일 저장 완료, ID:', result.rows[0].id);
+      
+      res.status(200).json({ 
+        success: true, 
+        message: '이메일이 성공적으로 저장되었습니다.',
+        emailId: result.rows[0].id
+      });
+      
+    } finally {
+      client.release();
+    }
+    
+  } catch (error) {
+    console.error('❌ 이메일 처리 오류:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: '이메일 처리 중 오류가 발생했습니다.' 
+    });
+  }
+});
+
 // 404 에러 핸들링
 app.use('*', (req, res) => {
   res.status(404).json({
@@ -106,18 +193,14 @@ async function startServer() {
       console.log(`📧 이메일 도메인: ${config.domain.email}`);
     });
 
-    // SMTP 서버 시작 (별도 포트에서 실행)
-    const smtpPort = config.smtp.port; // 10001 (별도 포트)
-    
-    // Render 환경에서는 SMTP 서버를 HTTP 서버와 동일한 포트에서 실행
-    if (process.env.NODE_ENV === 'production') {
-      console.log('🌍 Render 프로덕션 환경: SMTP 서버를 HTTP 서버와 동일한 포트에서 실행');
-      smtpServer.start(PORT); // HTTP 서버와 동일한 포트
+    // SMTP 서버는 개발 환경에서만 별도 포트에서 실행
+    if (process.env.NODE_ENV !== 'production') {
+      const smtpPort = config.smtp.port; // 10001 (별도 포트)
+      smtpServer.start(smtpPort);
+      console.log(`📧 SMTP 서버가 포트 ${smtpPort}에서 실행 중입니다.`);
     } else {
-      smtpServer.start(smtpPort); // 개발 환경에서는 별도 포트
+      console.log('🌍 Render 프로덕션 환경: HTTP 기반 이메일 처리 사용');
     }
-    
-    console.log(`📧 SMTP 서버가 포트 ${process.env.NODE_ENV === 'production' ? PORT : smtpPort}에서 실행 중입니다.`);
 
   } catch (error) {
     console.error('❌ 서버 시작 실패:', error);
