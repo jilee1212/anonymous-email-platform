@@ -13,14 +13,24 @@ class SMTPServerManager {
   start(port = null) {
     // 포트가 전달되면 사용, 아니면 설정된 포트 사용
     this.port = port || this.port;
+    
+    // 프로덕션 환경 설정
+    const isProduction = process.env.NODE_ENV === 'production';
+    
     this.server = new SMTPServer({
-      secure: false, // 개발 환경에서는 false, 프로덕션에서는 true
+      secure: isProduction, // 프로덕션에서는 true, 개발에서는 false
       authOptional: true, // 인증 선택사항
       maxSize: 10 * 1024 * 1024, // 최대 10MB
       maxConnections: 100,
       onData: this.handleEmail.bind(this),
       onRcptTo: this.handleRcptTo.bind(this),
-      onMailFrom: this.handleMailFrom.bind(this)
+      onMailFrom: this.handleMailFrom.bind(this),
+      // 프로덕션 환경에서 추가 설정
+      ...(isProduction && {
+        logger: true, // 로깅 활성화
+        hideSTARTTLS: false, // STARTTLS 지원
+        allowInsecureAuth: false // 보안 연결 강제
+      })
     });
 
     // 서버 시작

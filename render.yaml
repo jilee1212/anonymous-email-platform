@@ -2,15 +2,30 @@ services:
   - type: web
     name: anonymous-email-platform
     env: node
-    plan: free
     buildCommand: npm install
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 8081
+        value: 10000
+      - key: DB_HOST
+        value: your-postgres-host.render.com
+      - key: DB_PORT
+        value: 5432
+      - key: DB_NAME
+        value: anonymous_email
+      - key: DB_USER
+        value: your-postgres-user
+      - key: DB_PASSWORD
+        value: your-postgres-password
+      - key: SMTP_PORT
+        value: 10001
+      - key: SMTP_HOST
+        value: 0.0.0.0
       - key: DOMAIN
         value: nosignup.kr
       - key: EMAIL_DOMAIN
         value: nosignup.kr
+    healthCheckPath: /health
+    autoDeploy: true

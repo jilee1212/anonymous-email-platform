@@ -57,6 +57,16 @@ app.get('/inbox', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'inbox.html'));
 });
 
+// 헬스체크 엔드포인트 (Render용)
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    service: 'anonymous-email-platform',
+    version: '1.0.0'
+  });
+});
+
 // 404 에러 핸들링
 app.use('*', (req, res) => {
   res.status(404).json({
@@ -98,8 +108,16 @@ async function startServer() {
 
     // SMTP 서버 시작 (별도 포트에서 실행)
     const smtpPort = config.smtp.port; // 10001 (별도 포트)
-    smtpServer.start(smtpPort);
-    console.log(`📧 SMTP 서버가 포트 ${smtpPort}에서 실행 중입니다.`);
+    
+    // Render 환경에서는 SMTP 서버를 HTTP 서버와 동일한 포트에서 실행
+    if (process.env.NODE_ENV === 'production') {
+      console.log('🌍 Render 프로덕션 환경: SMTP 서버를 HTTP 서버와 동일한 포트에서 실행');
+      smtpServer.start(PORT); // HTTP 서버와 동일한 포트
+    } else {
+      smtpServer.start(smtpPort); // 개발 환경에서는 별도 포트
+    }
+    
+    console.log(`📧 SMTP 서버가 포트 ${process.env.NODE_ENV === 'production' ? PORT : smtpPort}에서 실행 중입니다.`);
 
   } catch (error) {
     console.error('❌ 서버 시작 실패:', error);
