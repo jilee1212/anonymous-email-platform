@@ -6,11 +6,13 @@ const config = require('../config/config');
 class SMTPServerManager {
   constructor() {
     this.server = null;
-    this.port = config.smtp?.port || 2525;
+    this.port = config.smtp?.port || 10000;  // 기본값을 10000으로 변경
   }
 
   // SMTP 서버 시작
-  start() {
+  start(port = null) {
+    // 포트가 전달되면 사용, 아니면 설정된 포트 사용
+    this.port = port || this.port;
     this.server = new SMTPServer({
       secure: false, // 개발 환경에서는 false, 프로덕션에서는 true
       authOptional: true, // 인증 선택사항

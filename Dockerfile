@@ -11,8 +11,8 @@ RUN npm ci --only=production
 # 애플리케이션 소스 코드 복사
 COPY . .
 
-# 포트 노출
-EXPOSE 3000
+# 포트 노출 (HTTP + SMTP)
+EXPOSE 10000
 
 # 애플리케이션 실행
 CMD ["npm", "start"]
