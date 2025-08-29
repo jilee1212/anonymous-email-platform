@@ -42,18 +42,27 @@ if (isDocker) {
   });
 }
 
-// 데이터베이스 연결 테스트 함수
-async function testConnection() {
+// 데이터베이스 연결 테스트 함수 (재시도 로직 포함)
+async function testConnection(maxRetries = 5, delay = 2000) {
   if (isDocker) {
-    try {
-      const client = await pool.connect();
-      const result = await client.query('SELECT NOW() as test');
-      client.release();
-      console.log('✅ PostgreSQL 연결 테스트 성공:', result.rows[0]);
-      return true;
-    } catch (error) {
-      console.error('❌ PostgreSQL 연결 테스트 실패:', error);
-      return false;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const client = await pool.connect();
+        const result = await client.query('SELECT NOW() as test');
+        client.release();
+        console.log(`✅ PostgreSQL 연결 테스트 성공 (시도 ${attempt}/${maxRetries}):`, result.rows[0]);
+        return true;
+      } catch (error) {
+        console.error(`❌ PostgreSQL 연결 테스트 실패 (시도 ${attempt}/${maxRetries}):`, error.message);
+        
+        if (attempt < maxRetries) {
+          console.log(`⏳ ${delay/1000}초 후 재시도...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        } else {
+          console.error('❌ 최대 재시도 횟수 초과');
+          return false;
+        }
+      }
     }
   } else {
     return new Promise((resolve) => {
@@ -75,7 +84,37 @@ async function initializeDatabase() {
   if (isDocker) {
     try {
       const client = await pool.connect();
-      console.log('✅ PostgreSQL 데이터베이스 초기화 완료 (스키마는 컨테이너 시작 시 자동 생성됨)');
+      
+      // 테이블 존재 여부 확인
+      const tableCheckQuery = `
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name IN ('users', 'emails', 'access_logs')
+      `;
+      
+      const tableResult = await client.query(tableCheckQuery);
+      const existingTables = tableResult.rows.map(row => row.table_name);
+      
+      if (existingTables.length < 3) {
+        console.log('⚠️ 필요한 테이블이 부족합니다. 스키마를 생성합니다...');
+        
+        // 스키마 파일 읽기 및 실행
+        const fs = require('fs');
+        const path = require('path');
+        const schemaPath = path.join(__dirname, 'schema.sql');
+        
+        if (fs.existsSync(schemaPath)) {
+          const schemaSQL = fs.readFileSync(schemaPath, 'utf8');
+          await client.query(schemaSQL);
+          console.log('✅ PostgreSQL 스키마 생성 완료');
+        } else {
+          console.log('⚠️ 스키마 파일을 찾을 수 없습니다.');
+        }
+      } else {
+        console.log('✅ PostgreSQL 테이블 확인 완료:', existingTables);
+      }
+      
       client.release();
       return true;
     } catch (error) {
